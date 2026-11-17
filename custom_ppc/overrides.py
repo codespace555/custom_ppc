@@ -23,7 +23,7 @@ def check_package_rows(doc, method=None):
         if is_package_item(row.item_code) and not (
             row.get("batch_no") or row.get("serial_and_batch_bundle")
         ):
-            frappe.throw(_("Row {0}: {1} is tracked by package. Enter packages first.").format(
+            frappe.throw(_("Row {0}: {1} is tracked by package. Select the package(s) (batch) for this row first.").format(
                 row.idx, row.item_code))
 
 

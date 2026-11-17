@@ -1,0 +1,20 @@
+{
+ "doctype": "DocType",
+ "name": "Custom PPC Settings",
+ "module": "Custom PPC",
+ "issingle": 1,
+ "custom": 0,
+ "track_changes": 1,
+ "field_order": ["stock_entry_section", "enable_stock_entry_picker", "picker_note"],
+ "fields": [
+  {"fieldname": "stock_entry_section", "fieldtype": "Section Break", "label": "Stock Entry"},
+  {"fieldname": "enable_stock_entry_picker", "fieldtype": "Check", "default": "0",
+   "label": "Use Custom PPC package picker on Stock Entry",
+   "description": "Off (default): use ERPNext's standard Add Batch Nos dialog; Tag ID, Package No and size show in its batch dropdown. On: use the Custom PPC Pick Packages dialog (list of all packages, tag filter, tick to pick)."},
+  {"fieldname": "picker_note", "fieldtype": "HTML", "options": "<p class='text-muted small'>Receipt popup and Package-wise Stock Balance report work in both modes.</p>"}
+ ],
+ "permissions": [
+  {"role": "System Manager", "read": 1, "write": 1, "create": 1},
+  {"role": "Stock Manager", "read": 1, "write": 1, "create": 1}
+ ]
+}

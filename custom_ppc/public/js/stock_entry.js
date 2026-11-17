@@ -6,15 +6,31 @@
 
 frappe.provide("custom_ppc");
 
+// Switch: Custom PPC Settings > "Use Custom PPC package picker on Stock Entry".
+// Off (default) = ERPNext's standard Add Batch Nos dialog is used.
+custom_ppc.picker_enabled = function () {
+    if (!custom_ppc._picker_enabled) {
+        custom_ppc._picker_enabled = frappe.db
+            .get_single_value("Custom PPC Settings", "enable_stock_entry_picker")
+            .then((v) => !!cint(v))
+            .catch(() => false);
+    }
+    return custom_ppc._picker_enabled;
+};
+
 frappe.ui.form.on("Stock Entry", {
-    refresh(frm) {
-        if (frm.doc.docstatus !== 0) return;
+    onload() {
+        custom_ppc._picker_enabled = null; // re-read the setting for each form
+    },
+    async refresh(frm) {
+        if (frm.doc.docstatus !== 0 || !(await custom_ppc.picker_enabled())) return;
         frm.add_custom_button(__("Pick Packages"), () => custom_ppc.se_pick_row(frm));
     },
 });
 
 frappe.ui.form.on("Stock Entry Detail", {
-    item_code(frm, cdt, cdn) {
+    async item_code(frm, cdt, cdn) {
+        if (!(await custom_ppc.picker_enabled())) return;
         setTimeout(() => custom_ppc.se_maybe_open(frm, cdn), 800);
     },
 });

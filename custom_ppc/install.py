@@ -39,8 +39,13 @@ VARIANT_FIELDS = ["custom_category", "custom_track_by_package", "custom_package_
 OBSOLETE_FIELDS = ["Item Group-custom_category", "Batch-custom_roll_no", "Batch-custom_metres_per_roll"]
 
 
+# Shown and searchable in batch dropdowns (incl. ERPNext's Add Batch Nos dialog)
+BATCH_SEARCH_FIELDS = "custom_tag_id,custom_package_no,custom_qty_per_package"
+
+
 def setup_fields():
     create_custom_fields(CUSTOM_FIELDS, update=True)
+    set_batch_search_fields()
     for name in OBSOLETE_FIELDS:
         if frappe.db.exists("Custom Field", name):
             frappe.delete_doc("Custom Field", name, ignore_permissions=True)
@@ -56,3 +61,9 @@ def copy_fields_to_variants():
         ivs.append("fields", {"field_name": f})
     if missing:
         ivs.save(ignore_permissions=True)
+
+
+def set_batch_search_fields():
+    from frappe.custom.doctype.property_setter.property_setter import make_property_setter
+
+    make_property_setter("Batch", None, "search_fields", BATCH_SEARCH_FIELDS, "Data", for_doctype=True)
