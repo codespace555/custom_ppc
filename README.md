@@ -12,7 +12,7 @@ Each physical package = one ERPNext **Batch** holding its qty in the item's stoc
 - Has Batch No = on, Automatically Create New Batch = off (the app creates the batches)
 
 ## What this version contains
-- Item fields: Category, Track by Package, Package Unit (copied to variants)
+- Item fields: Material Category, Track by Package, Package Unit (copied to variants)
 - Batch fields: Tag ID, Package No, Qty per Package, Package Unit
 - Purchase Receipt popup ("Enter Packages"): Tag ID / No. of packages / Qty per package
 - API: `custom_ppc.api.create_packages`, `custom_ppc.api.get_packages`
