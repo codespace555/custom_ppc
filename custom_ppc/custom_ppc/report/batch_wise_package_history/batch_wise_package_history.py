@@ -15,8 +15,9 @@ FULL, OPEN, EMPTY, NO_SIZE = "Full", "Open", "Empty", "No size"
 
 PACKAGE_COLUMNS = [
     {"label": _("Tag ID"), "fieldname": "tag_id", "fieldtype": "Data", "width": 90},
-    {"label": _("Package No"), "fieldname": "package_no", "fieldtype": "Int", "width": 80},
+    {"label": _("Package No"), "fieldname": "package_no", "fieldtype": "Data", "width": 110},
     {"label": _("Package Unit"), "fieldname": "package_uom", "fieldtype": "Link", "options": "UOM", "width": 90},
+    {"label": _("No. of Packages"), "fieldname": "packages", "fieldtype": "Int", "width": 90},
     {"label": _("Qty per Package"), "fieldname": "qty_per_package", "fieldtype": "Float", "width": 100},
     {"label": _("Status"), "fieldname": "package_status", "fieldtype": "Data", "width": 80},
 ]
@@ -65,13 +66,57 @@ def execute(filters=None):
             continue
         row.update({
             "tag_id": d.custom_tag_id,
-            "package_no": d.custom_package_no,
+            "packages": 1,
+            "package_no": f"{d.custom_package_no:02d}" if d.custom_package_no else "",
             "package_uom": d.custom_package_uom,
             "qty_per_package": d.custom_qty_per_package,
             "package_status": status,
         })
         out.append(row)
+
+    if filters.get("group_full", 1) in (1, "1", True):
+        out = group_unopened(out)
+        for c in columns:  # several batches in one cell -> plain text
+            if c.get("fieldname") == "batch":
+                c.update({"fieldtype": "Data", "options": None, "width": 220})
     return columns, out
+
+
+SUM_FIELDS = ("opening_qty", "in_qty", "out_qty", "balance_qty", "balance_value", "packages")
+
+
+def group_unopened(rows):
+    """Unopened packages (Full) of the same item + warehouse + tag + unit + size -> one row:
+    batches comma-separated, No. of Packages = count, quantities summed.
+    Same for packages fully moved out (Empty). Open / No size packages keep their own row,
+    so as soon as one package is opened it gets its own line and the group count drops."""
+    grouped, order = {}, []
+    for r in rows:
+        if r.get("package_status") not in ("Full", "Empty"):
+            key = ("single", id(r))
+        else:
+            key = (r.get("item"), r.get("warehouse"), r.get("tag_id"), r.get("package_uom"),
+                   flt(r.get("qty_per_package")), r.get("package_status"))
+        if key not in grouped:
+            grouped[key] = dict(r)
+            grouped[key]["_batches"], grouped[key]["_nos"] = [r.get("batch")], [r.get("package_no")]
+            order.append(key)
+            continue
+        g = grouped[key]
+        for f in SUM_FIELDS:
+            g[f] = flt(g.get(f)) + flt(r.get(f))
+        g["_batches"].append(r.get("batch"))
+        g["_nos"].append(r.get("package_no"))
+
+    out = []
+    for key in order:
+        g = grouped[key]
+        g["batch"] = ", ".join(b for b in g.pop("_batches") if b)
+        g["package_no"] = ", ".join(sorted(n for n in g.pop("_nos") if n))
+        if flt(g.get("balance_qty")):
+            g["valuation_rate"] = flt(g.get("balance_value")) / flt(g.get("balance_qty"))
+        out.append(g)
+    return out
 
 
 def _fieldname(col):

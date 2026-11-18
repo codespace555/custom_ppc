@@ -21,5 +21,8 @@ doc_events = {
         "before_submit": "custom_ppc.overrides.check_package_rows",
         "on_submit": "custom_ppc.overrides.link_packages_to_receipt",
     },
-    "Stock Entry": {"before_submit": "custom_ppc.overrides.check_package_rows"},
+    "Stock Entry": {
+        "before_validate": "custom_ppc.overrides.require_package_selection",
+        "before_submit": "custom_ppc.overrides.check_package_rows",
+    },
 }

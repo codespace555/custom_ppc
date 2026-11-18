@@ -19,6 +19,7 @@ frappe.query_reports["Batch-Wise Package History"] = {
           } },
         { fieldname: "tag_id", label: __("Tag ID"), fieldtype: "Data" },
         { fieldname: "open_only", label: __("Only open packages"), fieldtype: "Check" },
+        { fieldname: "group_full", label: __("Combine unopened packages in one row"), fieldtype: "Check", default: 1 },
     ],
 
     // Open (part-used) packages: whole row highlighted; status shown as a coloured label
